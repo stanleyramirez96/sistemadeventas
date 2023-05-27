@@ -82,11 +82,9 @@ namespace sistemadeventas.Data.Services
 
         public async Task<Result<List<UsuarioResponse>>> Consultar(string filtro)
         {
-
-
             try
             {
-                var usuario= dbcontext.Usuarios.Where(c => (c.Nickname + "" + c.Contraseña)
+                var usuario= await dbcontext.Usuarios.Where(c => (c.Nickname + "" + c.Contraseña)
                 .ToLower().Contains(filtro.ToLower())
                 ).Select(c => c.ToResponse()).ToListAsync();
                 return new Result<List<UsuarioResponse>>()
@@ -100,7 +98,7 @@ namespace sistemadeventas.Data.Services
             {
                 return new Result<List<UsuarioResponse>>
                 {
-                    Message = "Ok",
+                    Message = ex.Message,
                     Success = true,
 
                 };
