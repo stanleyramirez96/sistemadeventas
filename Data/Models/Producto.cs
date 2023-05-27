@@ -50,13 +50,12 @@ public class Producto
     }
     public ProductoResponse ToResponse() => new ProductoResponse()
     {
+        ID=ID,
         NombreP = NombreP,
         Costo = Costo,
         Total = Total,
         Cantidad = Cantidad
 
     };
-    public virtual ICollection<Venta> Ventas { get; set; }
-
 
 }

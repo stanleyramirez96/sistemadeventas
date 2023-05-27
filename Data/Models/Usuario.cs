@@ -7,6 +7,10 @@ namespace sistemadeventas.Data.Models;
 public class Usuario
 
 {
+    public Usuario()
+    {
+        Ventas = new List<Venta>();
+    }
     [Key]
     public int ID { get; set; }
     public string? Nickname { get; set; }

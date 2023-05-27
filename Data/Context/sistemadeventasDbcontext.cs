@@ -2,10 +2,10 @@ using Microsoft.EntityFrameworkCore;
 using sistemadeventas.Data.Models;
 namespace sistemadeventas.Data.Context
 {
-    public class sistemadeventasDbcontext : DbContext, IsistemadeventasDbcontext
+    public class SistemaDeVentasDbContext : DbContext, ISistemaDeVentasDbContext
     {
         private readonly IConfiguration cofing;
-        public sistemadeventasDbcontext(IConfiguration confing)
+        public SistemaDeVentasDbContext(IConfiguration confing)
         {
             this.cofing = confing;
 
@@ -14,6 +14,7 @@ namespace sistemadeventas.Data.Context
         public DbSet<Producto> Productos { get; set; }
         public DbSet<Cliente> Clientes { get; set; }
         public DbSet<Usuario> Usuarios { get; set; }
+        public DbSet<VentaDetalle> VentasDetalles { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {

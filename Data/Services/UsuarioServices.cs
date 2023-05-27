@@ -4,105 +4,101 @@ using sistemadeventas.Data.Models;
 using sistemadeventas.Data.Request;
 using sistemadeventas.Data.Response;
 
-namespace sistemadeventas.Data.Services
+namespace sistemadeventas.Data.Services;
+
+public interface IUsuarioServices
+{
+    Task<Result<List<UsuarioResponse>>> Consultar(string filtro);
+    Task<Result> Crear(UsuarioRequest request);
+    Task<Result> Eliminar(UsuarioRequest request);
+    Task<Result> Modificar(UsuarioRequest request);
+}
+
+public class UsuarioServices : IUsuarioServices
 {
 
-    public class UsuarioServices : IUsuarioServices
+    private readonly ISistemaDeVentasDbContext dbcontext;
+
+    public UsuarioServices(ISistemaDeVentasDbContext dbcontext)
     {
-        public class Result
+        this.dbcontext = dbcontext;
+
+    }
+    public async Task<Result> Crear(UsuarioRequest request)
+    {
+
+
+        try
         {
-            public bool Success { get; set; }
-            public string Message { get; set; }
+            var usuario = Usuario.Crear(request);
+            dbcontext.Usuarios.Add(usuario);
+            await dbcontext.SaveChangesAsync();
+            return new Result { Message = "Ok", Success = true };
         }
-        public class Result<T>
+        catch (Exception ex)
         {
-            public bool Success { get; set; }
-            public string Message { get; set; }
-            public T? Data { get; set; }
+            return new Result { Message = ex.Message, Success = false };
         }
-        private readonly IsistemadeventasDbcontext dbcontext;
+    }
+    public async Task<Result> Modificar(UsuarioRequest request)
+    {
 
-        public UsuarioServices(IsistemadeventasDbcontext dbcontext)
+
+        try
         {
-            this.dbcontext = dbcontext;
-
-        }
-        public async Task<Result> Crear(UsuarioRequest request)
-        {
-
-
-            try
-            {
-                var usuario = Usuario.Crear(request);
-                dbcontext.Usuarios.Add(usuario);
+            var usuario = await dbcontext.Usuarios.FirstOrDefaultAsync(c => c.ID == request.ID);
+            if (usuario == null)
+                return new Result { Message = "No se encontro un usuario", Success = false };
+            if (usuario.Modificar(request))
                 await dbcontext.SaveChangesAsync();
-                return new Result { Message = "Ok", Success = true };
-            }
-            catch (Exception ex)
-            {
-                return new Result { Message = ex.Message, Success = false };
-            }
+            return new Result { Message = "Ok", Success = true };
         }
-        public async Task<Result> Modificar(UsuarioRequest request)
+        catch (Exception ex)
         {
-
-
-            try
-            {
-                var usuario = await dbcontext.Usuarios.FirstOrDefaultAsync(c => c.ID == request.ID);
-                if (usuario == null)
-                    return new Result { Message = "No se encontro un usuario", Success = false };
-                if (usuario.Modificar(request))
-                    await dbcontext.SaveChangesAsync();
-                return new Result { Message = "Ok", Success = true };
-            }
-            catch (Exception ex)
-            {
-                return new Result { Message = ex.Message, Success = false };
-            }
+            return new Result { Message = ex.Message, Success = false };
         }
+    }
 
-        public async Task<Result> Eliminar(UsuarioRequest request)
+    public async Task<Result> Eliminar(UsuarioRequest request)
+    {
+
+
+        try
         {
-
-
-            try
-            {
-                var usuario = await dbcontext.Usuarios.FirstOrDefaultAsync(c => c.ID == request.ID);
-                if (usuario == null)
-                    return new Result { Message = "No se encontro un usuario", Success = false };
-                dbcontext.Usuarios.Remove(usuario);
-                return new Result { Message = "Ok", Success = true };
-            }
-            catch (Exception ex)
-            {
-                return new Result { Message = ex.Message, Success = false };
-            }
+            var usuario = await dbcontext.Usuarios.FirstOrDefaultAsync(c => c.ID == request.ID);
+            if (usuario == null)
+                return new Result { Message = "No se encontro un usuario", Success = false };
+            dbcontext.Usuarios.Remove(usuario);
+            return new Result { Message = "Ok", Success = true };
         }
-
-        public async Task<Result<List<UsuarioResponse>>> Consultar(string filtro)
+        catch (Exception ex)
         {
-            try
-            {
-                var usuario= await dbcontext.Usuarios.Where(c => (c.Nickname + "" + c.Contraseña)
-                .ToLower().Contains(filtro.ToLower())
-                ).Select(c => c.ToResponse()).ToListAsync();
-                return new Result<List<UsuarioResponse>>()
-                {
-                    Message = "Ok",
-                    Success = true,
-                    Data = usuario
-                };
-            }
-            catch (Exception ex)
-            {
-                return new Result<List<UsuarioResponse>>
-                {
-                    Message = ex.Message,
-                    Success = true,
+            return new Result { Message = ex.Message, Success = false };
+        }
+    }
 
-                };
-            }
+    public async Task<Result<List<UsuarioResponse>>> Consultar(string filtro)
+    {
+        try
+        {
+            var usuario = await dbcontext.Usuarios.Where(c => (c.Nickname + "" + c.Contraseña)
+            .ToLower().Contains(filtro.ToLower())
+            ).Select(c => c.ToResponse()).ToListAsync();
+            return new Result<List<UsuarioResponse>>()
+            {
+                Message = "Ok",
+                Success = true,
+                Data = usuario
+            };
+        }
+        catch (Exception ex)
+        {
+            return new Result<List<UsuarioResponse>>
+            {
+                Message = ex.Message,
+                Success = true,
+
+            };
         }
     }
 }

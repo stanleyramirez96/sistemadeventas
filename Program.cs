@@ -1,6 +1,3 @@
-using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Web;
-using Microsoft.Extensions.DependencyInjection;
 using sistemadeventas.Data;
 using sistemadeventas.Data.Context;
 using sistemadeventas.Data.Services;
@@ -11,8 +8,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 builder.Services.AddSingleton<WeatherForecastService>(); 
-builder.Services.AddDbContext<sistemadeventasDbcontext>();
-builder.Services.AddScoped<IsistemadeventasDbcontext,sistemadeventasDbcontext>();
+builder.Services.AddDbContext<SistemaDeVentasDbContext>();
+builder.Services.AddScoped<ISistemaDeVentasDbContext,SistemaDeVentasDbContext>();
 builder.Services.AddScoped<IUsuarioServices, UsuarioServices>();
 
 var app = builder.Build();
