@@ -54,5 +54,10 @@ public class Venta
         }
         return cambio;
     }
+
+    internal object ToResponse()
+    {
+        throw new NotImplementedException();
+    }
     #endregion
 }

@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-
+using sistemadeventas.Data.Models;
 namespace sistemadeventas.Data.Models;
 
 public class VentaDetalle

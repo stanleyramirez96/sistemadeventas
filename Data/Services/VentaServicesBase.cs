@@ -1,80 +1,14 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using sistemadeventas.Data.Context;
 using sistemadeventas.Data.Models;
 using sistemadeventas.Data.Request;
 using sistemadeventas.Data.Response;
 using sistemadeventas.Data.Services;
 
-public interface IVentaServices
-{
-    Task<Result<List<VentaRequest>>> Consultar(string filtro);
-    Task<Result> Crear(VentaRequest request);
-    Task<Result> Eliminar(VentaRequest request);
-    Task<Result> Modificar(VentaRequest request);
-}
-
-public class VentaServices : IVentaServices1
+public class VentaServicesBase
 {
 
     private readonly ISistemaDeVentasDbContext dbcontext;
-
-    public VentaServices(ISistemaDeVentasDbContext dbcontext)
-    {
-        this.dbcontext = dbcontext;
-
-    }
-    public async Task<Result> Crear(VentaRequest request)
-    {
-
-
-        try
-        {
-            var venta = Venta.Crear(request);
-            dbcontext.Ventas.Add(venta);
-            await dbcontext.SaveChangesAsync();
-            return new Result { Message = "Ok", Success = true };
-        }
-        catch (Exception ex)
-        {
-            return new Result { Message = ex.Message, Success = false };
-        }
-    }
-    public async Task<Result> Modificar(VentaRequest request)
-    {
-
-
-        try
-        {
-            var venta = await dbcontext.Ventas.FirstOrDefaultAsync(c => c.ID == request.ID);
-            if (venta == null)
-                return new Result { Message = "No se encontro un usuario", Success = false };
-            if (venta.Modificar(request))
-                await dbcontext.SaveChangesAsync();
-            return new Result { Message = "Ok", Success = true };
-        }
-        catch (Exception ex)
-        {
-            return new Result { Message = ex.Message, Success = false };
-        }
-    }
-
-    public async Task<Result> Eliminar(VentaRequest request)
-    {
-
-
-        try
-        {
-            var venta = await dbcontext.Ventas.FirstOrDefaultAsync(c => c.ID == request.ID);
-            if (venta == null)
-                return new Result { Message = "No se encontro un usuario", Success = false };
-            dbcontext.Ventas.Remove(venta);
-            return new Result { Message = "Ok", Success = true };
-        }
-        catch (Exception ex)
-        {
-            return new Result { Message = ex.Message, Success = false };
-        }
-    }
 
     public async Task<Result<List<VentaResponse>>> Consultar(string filtro)
     {
@@ -101,7 +35,56 @@ public class VentaServices : IVentaServices1
             };
         }
     }
+    public async Task<Result> Crear(VentaRequest request)
+    {
 
 
+        try
+        {
+            var venta = Venta.Crear(request);
+            dbcontext.Ventas.Add(venta);
+            await dbcontext.SaveChangesAsync();
+            return new Result { Message = "Ok", Success = true };
+        }
+        catch (Exception ex)
+        {
+            return new Result { Message = ex.Message, Success = false };
+        }
+    }
+
+    public async Task<Result> Eliminar(VentaRequest request)
+    {
+
+
+        try
+        {
+            var venta = await dbcontext.Ventas.FirstOrDefaultAsync(c => c.ID == request.ID);
+            if (venta == null)
+                return new Result { Message = "No se encontro un usuario", Success = false };
+            dbcontext.Ventas.Remove(venta);
+            return new Result { Message = "Ok", Success = true };
+        }
+        catch (Exception ex)
+        {
+            return new Result { Message = ex.Message, Success = false };
+        }
+    }
+    public async Task<Result> Modificar(VentaRequest request)
+    {
+
+
+        try
+        {
+            var venta = await dbcontext.Ventas.FirstOrDefaultAsync(c => c.ID == request.ID);
+            if (venta == null)
+                return new Result { Message = "No se encontro un usuario", Success = false };
+            if (venta.Modificar(request))
+                await dbcontext.SaveChangesAsync();
+            return new Result { Message = "Ok", Success = true };
+        }
+        catch (Exception ex)
+        {
+            return new Result { Message = ex.Message, Success = false };
+        }
+    }
 }
-
