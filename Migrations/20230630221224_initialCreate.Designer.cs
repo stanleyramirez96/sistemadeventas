@@ -12,8 +12,8 @@ using sistemadeventas.Data.Context;
 namespace sistemadeventas.Migrations
 {
     [DbContext(typeof(SistemaDeVentasDbContext))]
-    [Migration("20230527194524_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20230630221224_initialCreate")]
+    partial class initialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -65,13 +65,13 @@ namespace sistemadeventas.Migrations
                     b.Property<int>("Cantidad")
                         .HasColumnType("int");
 
-                    b.Property<decimal>("Costo")
-                        .HasColumnType("decimal(18,2)");
-
                     b.Property<string>("NombreP")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<decimal>("Total")
+                    b.Property<decimal>("PrecioC")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("PrecioV")
                         .HasColumnType("decimal(18,2)");
 
                     b.HasKey("ID");
@@ -100,11 +100,11 @@ namespace sistemadeventas.Migrations
 
             modelBuilder.Entity("sistemadeventas.Data.Models.Venta", b =>
                 {
-                    b.Property<int>("ID")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ID"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<int>("ClienteId")
                         .HasColumnType("int");
@@ -112,33 +112,35 @@ namespace sistemadeventas.Migrations
                     b.Property<DateTime>("Fecha")
                         .HasColumnType("datetime2");
 
-                    b.Property<decimal>("Total")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<int>("UsuarioId")
+                    b.Property<int?>("ProductoID")
                         .HasColumnType("int");
 
-                    b.HasKey("ID");
+                    b.Property<int?>("UsuarioID")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
 
                     b.HasIndex("ClienteId");
 
-                    b.HasIndex("UsuarioId");
+                    b.HasIndex("ProductoID");
+
+                    b.HasIndex("UsuarioID");
 
                     b.ToTable("Ventas");
                 });
 
             modelBuilder.Entity("sistemadeventas.Data.Models.VentaDetalle", b =>
                 {
-                    b.Property<int>("ID")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ID"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<int>("Cantidad")
                         .HasColumnType("int");
 
-                    b.Property<decimal>("Precio")
+                    b.Property<decimal>("PrecioV")
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<int>("ProductoId")
@@ -147,7 +149,7 @@ namespace sistemadeventas.Migrations
                     b.Property<int>("VentaId")
                         .HasColumnType("int");
 
-                    b.HasKey("ID");
+                    b.HasKey("Id");
 
                     b.HasIndex("ProductoId");
 
@@ -164,15 +166,15 @@ namespace sistemadeventas.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("sistemadeventas.Data.Models.Usuario", "Usuario")
+                    b.HasOne("sistemadeventas.Data.Models.Producto", null)
                         .WithMany("Ventas")
-                        .HasForeignKey("UsuarioId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("ProductoID");
+
+                    b.HasOne("sistemadeventas.Data.Models.Usuario", null)
+                        .WithMany("Ventas")
+                        .HasForeignKey("UsuarioID");
 
                     b.Navigation("Cliente");
-
-                    b.Navigation("Usuario");
                 });
 
             modelBuilder.Entity("sistemadeventas.Data.Models.VentaDetalle", b =>
@@ -195,6 +197,11 @@ namespace sistemadeventas.Migrations
                 });
 
             modelBuilder.Entity("sistemadeventas.Data.Models.Cliente", b =>
+                {
+                    b.Navigation("Ventas");
+                });
+
+            modelBuilder.Entity("sistemadeventas.Data.Models.Producto", b =>
                 {
                     b.Navigation("Ventas");
                 });

@@ -1,105 +1,129 @@
-using Microsoft.EntityFrameworkCore;
 using sistemadeventas.Data.Context;
 using sistemadeventas.Data.Models;
 using sistemadeventas.Data.Request;
 using sistemadeventas.Data.Response;
-using sistemadeventas.Data.Services;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
-public interface IProductoServices
+
+
+namespace sistemadeventas.Data.Services
 {
-    Task<Result<List<ProductoRequest>>> Consultar(string filtro);
-    Task<Result> Crear(ProductoRequest request);
-    Task<Result> Eliminar(ProductoRequest request);
-    Task<Result> Modificar(ProductoRequest request);
-}
-
-public class ProductoServices : IProductoServices1
-{
-
-    private readonly ISistemaDeVentasDbContext dbcontext;
-
-    public ProductoServices(ISistemaDeVentasDbContext dbcontext)
+    public class ProductoServices : IProductoServices
     {
-        this.dbcontext = dbcontext;
+        private readonly ISistemaDeVentasDbContext dbContext;
 
-    }
-    public async Task<Result> Crear(ProductoRequest request)
-    {
-
-
-        try
+        public class Result
         {
-            var producto = Producto.Crear(request);
-            dbcontext.Productos.Add(producto);
-            await dbcontext.SaveChangesAsync();
-            return new Result { Message = "Ok", Success = true };
+            public bool Success { get; set; }
+            public string? Message { get; set; }
         }
-        catch (Exception ex)
+
+        public class Result<T>
         {
-            return new Result { Message = ex.Message, Success = false };
+            public bool Success { get; set; }
+            public string? Message { get; set; }
+            public T? Data { get; set; }
         }
-    }
-    public async Task<Result> Modificar(ProductoRequest request)
-    {
 
-
-        try
+        public ProductoServices(ISistemaDeVentasDbContext dbContext)
         {
-            var producto = await dbcontext.Productos.FirstOrDefaultAsync(c => c.ID == request.ID);
-            if (producto == null)
-                return new Result { Message = "No se encontro un usuario", Success = false };
-            if (producto.Modificar(request))
-                await dbcontext.SaveChangesAsync();
-            return new Result { Message = "Ok", Success = true };
+            this.dbContext = dbContext;
         }
-        catch (Exception ex)
-        {
-            return new Result { Message = ex.Message, Success = false };
-        }
-    }
-
-    public async Task<Result> Eliminar(ProductoRequest request)
-    {
 
 
-        try
+        public async Task<Result<List<ProductoResponse>>> Consultar()
         {
-            var producto = await dbcontext.Productos.FirstOrDefaultAsync(c => c.ID == request.ID);
-            if (producto == null)
-                return new Result { Message = "No se encontro un usuario", Success = false };
-            dbcontext.Productos.Remove(producto);
-            return new Result { Message = "Ok", Success = true };
-        }
-        catch (Exception ex)
-        {
-            return new Result { Message = ex.Message, Success = false };
-        }
-    }
-
-    public async Task<Result<List<ProductoResponse>>> Consultar(string filtro)
-    {
-        try
-        {
-            var producto = await dbcontext.Productos.Where(c => (c.NombreP + "" + c.Costo + "" + c.Total + "" + c.Cantidad)
-            .ToLower().Contains(filtro.ToLower())
-            ).Select(c => c.ToResponse()).ToListAsync();
-            return new Result<List<ProductoResponse>>()
+            try
             {
-                Message = "Ok",
-                Success = true,
-                Data = producto
-            };
-        }
-        catch (Exception ex)
-        {
-            return new Result<List<ProductoResponse>>
-            {
-                Message = ex.Message,
-                Success = true,
+                var productos = dbContext.Productos.ToList();
+                var productosResponse = productos.Select(p => p.ToResponse()).ToList();
 
-            };
+                return new Result<List<ProductoResponse>> { Success = true, Data = productosResponse };
+            }
+            catch (Exception ex)
+            {
+                return new Result<List<ProductoResponse>> { Success = false, Message = ex.Message };
+            }
+        }
+
+        public async Task<Result<ProductoResponse>> ConsultarPorId(int productoId)
+        {
+            try
+            {
+                var producto = dbContext.Productos.FirstOrDefault(p => p.ID == productoId);
+                if (producto == null)
+                {
+                    return new Result<ProductoResponse> { Success = false, Message = "No se encontró el producto" };
+                }
+
+                var productoResponse = producto.ToResponse();
+                return new Result<ProductoResponse> { Success = true, Data = productoResponse };
+            }
+            catch (Exception ex)
+            {
+                return new Result<ProductoResponse> { Success = false, Message = ex.Message };
+            }
+        }
+
+        public async Task<Result> Crear(ProductoRequest request)
+        {
+            try
+            {
+                var producto = Producto.Crear(request);
+                dbContext.Productos.Add(producto);
+                await dbContext.SaveChangesAsync();
+
+                return new Result { Success = true, Message = "Producto creado exitosamente" };
+            }
+            catch (Exception ex)
+            {
+                return new Result { Success = false, Message = ex.Message };
+            }
+        }
+
+        public async Task<Result> Modificar(int productoId, ProductoRequest request)
+        {
+            try
+            {
+                var producto = dbContext.Productos.FirstOrDefault(p => p.ID == productoId);
+                if (producto == null)
+                {
+                    return new Result { Success = false, Message = "No se encontró el producto" };
+                }
+
+                producto.Modificar(request);
+                await dbContext.SaveChangesAsync();
+
+                return new Result { Success = true, Message = "Producto modificado exitosamente" };
+            }
+            catch (Exception ex)
+            {
+                return new Result { Success = false, Message = ex.Message };
+            }
+        }
+
+        public async Task<Result> Eliminar(int productoId)
+        {
+            try
+            {
+                var producto = dbContext.Productos.FirstOrDefault(p => p.ID == productoId);
+                if (producto == null)
+                {
+                    return new Result { Success = false, Message = "No se encontró el producto" };
+                }
+
+                dbContext.Productos.Remove(producto);
+                await dbContext.SaveChangesAsync();
+
+                return new Result { Success = true, Message = "Producto eliminado exitosamente" };
+            }
+            catch (Exception ex)
+            {
+                return new Result { Success = false, Message = ex.Message };
+            }
         }
     }
-
-
 }

@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace sistemadeventas.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
+    public partial class initialCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -35,8 +35,8 @@ namespace sistemadeventas.Migrations
                     ID = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     NombreP = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Costo = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    Total = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    PrecioV = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    PrecioC = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     Cantidad = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
@@ -62,16 +62,16 @@ namespace sistemadeventas.Migrations
                 name: "Ventas",
                 columns: table => new
                 {
-                    ID = table.Column<int>(type: "int", nullable: false)
+                    Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    UsuarioId = table.Column<int>(type: "int", nullable: false),
                     ClienteId = table.Column<int>(type: "int", nullable: false),
-                    Total = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    Fecha = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    Fecha = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    ProductoID = table.Column<int>(type: "int", nullable: true),
+                    UsuarioID = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Ventas", x => x.ID);
+                    table.PrimaryKey("PK_Ventas", x => x.Id);
                     table.ForeignKey(
                         name: "FK_Ventas_Clientes_ClienteId",
                         column: x => x.ClienteId,
@@ -79,27 +79,31 @@ namespace sistemadeventas.Migrations
                         principalColumn: "ID",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_Ventas_Usuarios_UsuarioId",
-                        column: x => x.UsuarioId,
+                        name: "FK_Ventas_Productos_ProductoID",
+                        column: x => x.ProductoID,
+                        principalTable: "Productos",
+                        principalColumn: "ID");
+                    table.ForeignKey(
+                        name: "FK_Ventas_Usuarios_UsuarioID",
+                        column: x => x.UsuarioID,
                         principalTable: "Usuarios",
-                        principalColumn: "ID",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "ID");
                 });
 
             migrationBuilder.CreateTable(
                 name: "VentasDetalles",
                 columns: table => new
                 {
-                    ID = table.Column<int>(type: "int", nullable: false)
+                    Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     VentaId = table.Column<int>(type: "int", nullable: false),
                     ProductoId = table.Column<int>(type: "int", nullable: false),
                     Cantidad = table.Column<int>(type: "int", nullable: false),
-                    Precio = table.Column<decimal>(type: "decimal(18,2)", nullable: false)
+                    PrecioV = table.Column<decimal>(type: "decimal(18,2)", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_VentasDetalles", x => x.ID);
+                    table.PrimaryKey("PK_VentasDetalles", x => x.Id);
                     table.ForeignKey(
                         name: "FK_VentasDetalles_Productos_ProductoId",
                         column: x => x.ProductoId,
@@ -110,7 +114,7 @@ namespace sistemadeventas.Migrations
                         name: "FK_VentasDetalles_Ventas_VentaId",
                         column: x => x.VentaId,
                         principalTable: "Ventas",
-                        principalColumn: "ID",
+                        principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
@@ -120,9 +124,14 @@ namespace sistemadeventas.Migrations
                 column: "ClienteId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Ventas_UsuarioId",
+                name: "IX_Ventas_ProductoID",
                 table: "Ventas",
-                column: "UsuarioId");
+                column: "ProductoID");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Ventas_UsuarioID",
+                table: "Ventas",
+                column: "UsuarioID");
 
             migrationBuilder.CreateIndex(
                 name: "IX_VentasDetalles_ProductoId",
@@ -142,13 +151,13 @@ namespace sistemadeventas.Migrations
                 name: "VentasDetalles");
 
             migrationBuilder.DropTable(
-                name: "Productos");
-
-            migrationBuilder.DropTable(
                 name: "Ventas");
 
             migrationBuilder.DropTable(
                 name: "Clientes");
+
+            migrationBuilder.DropTable(
+                name: "Productos");
 
             migrationBuilder.DropTable(
                 name: "Usuarios");

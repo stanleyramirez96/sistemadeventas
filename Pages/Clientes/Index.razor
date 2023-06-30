@@ -1,0 +1,216 @@
+﻿@page "/cliente"
+@inject IClienteServices ClienteServices
+@inject IJSRuntime JSRuntime
+
+
+<h3>Clientes (@Clientes.Count)</h3>
+@if (!ShowForm)
+{
+    <div class="mb-2">
+        <button class="btn btn-success" @onclick="MostrarFormulario">Agregar</button>
+    </div>
+}
+
+<div class="container">
+    @if (ShowForm)
+    {
+        <h3>@TituloForm</h3>
+        <EditForm Model="request" OnValidSubmit="Enviar">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+
+            <div class="mb-3 input-group">
+                <label class="input-group-text">Nombre:</label>
+                <InputText class="form-control" @bind-Value="@request.NombreC"></InputText>
+            </div>
+            <div class="mb-3 input-group">
+                <label class="input-group-text">Apellido:</label>
+                <InputText class="form-control" @bind-Value="@request.Apellido"></InputText>
+            </div>
+            <div class="mb-3 input-group">
+                <label class="input-group-text">Cédula:</label>
+                <InputText class="form-control" @bind-Value="@request.Cedula"></InputText>
+            </div>
+            <div class="mb-3 input-group">
+                <label class="input-group-text">Teléfono:</label>
+                <InputText class="form-control" @bind-Value="@request.Telefono"></InputText>
+            </div>
+            <div class="mb-3 input-group">
+                <label class="input-group-text">Dirección:</label>
+                <InputText class="form-control" @bind-Value="@request.Direccion"></InputText>
+            </div>
+
+            <div class="btn-group">
+                <button type="submit" class="btn btn-outline-success">Guardar</button>
+                <button @onclick="Cancelar" class="btn btn-outline-danger">Cancelar</button>
+            </div>
+        </EditForm>
+        <br />
+    }
+    else
+    {
+        <table class="table table-striped">
+            <thead class="thead-dark">
+                <tr>
+                    <th scope="col">Nombre</th>
+                    <th scope="col">Apellido</th>
+                    <th scope="col">Cédula</th>
+                    <th scope="col">Teléfono</th>
+                    <th scope="col">Dirección</th>
+                    <th scope="col">Funciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var cliente in Clientes)
+                {
+                    <tr>
+                        <td>@cliente.NombreC</td>
+                        <td>@cliente.Apellido</td>
+                        <td>@cliente.Cedula</td>
+                        <td>@cliente.Telefono</td>
+                        <td>@cliente.Direccion</td>
+                        <td>
+
+                            <div class="btn-group">
+
+
+                                <button class="btn btn-outline-primary btn-sm" @onclick="() => ModificarCliente(cliente)">
+                                    <span class="oi oi-pencil" aria-hidden="true"></span> Editar
+                                </button>
+                                <button class="btn btn-outline-danger btn-sm" @onclick="() => EliminarCliente(cliente)">
+                                    <span class="oi oi-trash" aria-hidden="true"></span> Eliminar
+                                </button>
+
+
+
+                            </div>
+
+
+
+                         
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+
+    }
+</div>
+
+@code {
+    public string TituloForm => request.ID == 0 ? "Agregar cliente" : "Modificar cliente";
+    public bool ShowForm { get; set; } = false;
+    public bool MostrarDetalles { get; set; } = false;
+    public string Filtro { get; set; } = "";
+    public List<ClienteResponse> Clientes { get; set; } = new List<ClienteResponse>();
+    public ClienteRequest request = new ClienteRequest();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarClientes();
+    }
+
+    public async Task CargarClientes()
+    {
+        var resultado = await ClienteServices.Consultar(Filtro);
+        if (resultado.Success)
+        {
+            Clientes = resultado.Data;
+        }
+        else
+        {
+            // Mostrar mensaje de error
+            Console.WriteLine("Error al cargar los clientes: " + resultado.Message);
+        }
+    }
+
+    public async Task ModificarCliente(ClienteResponse cliente)
+    {
+        request = new ClienteRequest
+            {
+                ID = cliente.ID,
+                NombreC = cliente.NombreC,
+                Apellido = cliente.Apellido,
+                Cedula = cliente.Cedula,
+                Telefono = cliente.Telefono,
+                Direccion = cliente.Direccion
+            };
+        ShowForm = true;
+    }
+
+    public async Task EliminarCliente(ClienteResponse cliente)
+    {
+        var confirmacion = await JSRuntime.InvokeAsync<bool>("confirm", "¿Estás seguro de eliminar este cliente?");
+        if (confirmacion)
+        {
+            var resultado = await ClienteServices.Eliminar(new ClienteRequest { ID = cliente.ID });
+            if (resultado.Success)
+            {
+                await CargarClientes();
+            }
+            else
+            {
+                // Mostrar mensaje de error
+                Console.WriteLine("Error al eliminar el cliente: " + resultado.Message);
+            }
+        }
+    }
+
+    public async Task Enviar()
+    {
+        try
+        {
+            if (request.ID == 0)
+            {
+                var resultado = await ClienteServices.Crear(request);
+                if (resultado.Success)
+                {
+                    Cancelar();
+                    await CargarClientes();
+                }
+                else
+                {
+                    // Mostrar mensaje de error
+                    Console.WriteLine("Error al crear el cliente: " + resultado.Message);
+                }
+            }
+            else
+            {
+                var resultado = await ClienteServices.Modificar(request);
+                if (resultado.Success)
+                {
+                    Cancelar();
+                    await CargarClientes();
+                }
+                else
+                {
+                    // Mostrar mensaje de error
+                    Console.WriteLine("Error al modificar el cliente: " + resultado.Message);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("Error general: " + ex.Message);
+        }
+    }
+
+    
+
+
+
+ 
+
+    void MostrarFormulario()
+    {
+        request = new ClienteRequest();
+        ShowForm = true;
+    }
+
+    void Cancelar()
+    {
+    ShowForm = false;
+    }
+
+}

@@ -1,0 +1,210 @@
+﻿@page "/factura"
+@inject NavigationManager NavigationManager
+@inject IVentaServices VentaServices
+
+<h3>Factura</h3>
+
+<EditForm Model="request">
+    @if (Message != null)
+    {
+        <div class="alert-danger">
+            <span class="text-danger">@Message</span>
+        </div>
+    }
+
+    <div class="input-group mb-3">
+        <select class="form-control" @bind="request.ClienteId">
+            <option value="">Seleccione un cliente</option>
+            @foreach (var cliente in Clientes)
+            {
+                <option value="@cliente.ID">@cliente.NombreC</option>
+            }
+        </select>
+
+        <button class="btn btn-outline-success d-print-none" type="button" @onclick="async () => await CargarClientes()">
+            <span class="oi oi-reload"></span>
+        </button>
+    </div>
+
+    <div class="card p-2">
+        <div class="card-header card-title">
+            <h3 class="">¿Qué desea el cliente?</h3>
+        </div>
+
+        <small class="p-2">Aquí puedes detallar lo que le cargarás a la factura al cliente...</small>
+        <div class="input-group mb-3">
+            <select class="form-control" @bind="IdProducto">
+                <option value="">Seleccione un producto</option>
+                @foreach (var producto in Productos)
+                {
+                    <option value="@producto.ID">@producto.NombreP</option>
+                }
+            </select>
+
+            <button class="btn btn-outline-success d-print-none" type="button" @onclick="async () => await CargarProductos()">
+                <span class="oi oi-reload"></span>
+            </button>
+        </div>
+
+        <div class="input-group mb-3">
+            <span class="form-control w-50">
+                $@PrecioV.ToString("N2")
+            </span>
+            <input class="form-control w-25" type="number" @bind="@Cantidad" />
+            <button class="btn btn-success d-print-none" type="button" @onclick="AgregarAlDetalle">
+                <span class="oi oi-collapse-down"></span>
+            </button>
+        </div>
+
+    </div>
+
+    <h5>Detalle de la factura</h5>
+    <table class="table">
+        <thead>
+            <tr>
+                <th class="col w-25">Cantidad</th>
+                <th>Descripción</th>
+                <th class="col w-25">PrecioV</th>
+                <th class="col w-25">SubTotal</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var detalle in request.Detalles)
+            {
+                <tr>
+                    <td>@detalle.Cantidad</td>
+                    <td>@detalle.Descripcion</td>
+                    <td>$@detalle.PrecioV.ToString("N2")</td>
+                    <td>$@(detalle.PrecioV * detalle.Cantidad)</td>
+                    <td>
+                        <button class="btn btn-sm btn-danger" @onclick="()=>EliminarDetalle(detalle.ProductoId)">
+                            <span class="oi oi-trash"></span>
+                        </button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+
+        <tfoot>
+            <tr>
+                <td colspan="3" class="text-right">
+                    <strong>Total:</strong>
+                </td>
+                <td>
+                    <strong>$@request.Detalles.Sum(d => d.Cantidad * d.PrecioV).ToString("N2")</strong>
+                </td>
+                <td></td>
+            </tr>
+        </tfoot>
+    </table>
+
+
+    <button type="submit" class="btn btn-primary" @onclick="Send">Crear Factura</button>
+    <button type="button" class="btn btn-secondary" @onclick="Cancelar">Cancelar</button>
+
+</EditForm>
+
+@code {
+    public string? Message { get; set; } = null;
+    public List<ClienteResponse> Clientes { get; set; } = new List<ClienteResponse>();
+    public List<ProductoResponse> Productos { get; set; } = new List<ProductoResponse>();
+    public VentaRequest request { get; set; } = new VentaRequest();
+    public decimal PrecioV { get; set; } = 0;
+    public int Cantidad { get; set; } = 1;
+    public int IdProducto { get; set; } = 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarClientes();
+    }
+
+    async Task CargarClientes()
+    {
+        var result = await VentaServices.ConsultarClientes();
+        if (result.Success)
+        {
+            Clientes = result.Data ?? new List<ClienteResponse>();
+        }
+    }
+
+    async Task CargarProductos()
+    {
+        var result = await VentaServices.ConsultarProductos();
+        if (result.Success)
+        {
+            Productos = result.Data ?? new List<ProductoResponse>();
+        }
+    }
+
+    async Task BuscarPrecio(string id)
+    {
+        if (int.TryParse(id, out int idProducto))
+        {
+            var producto = Productos.FirstOrDefault(p => p.NombreP == id);
+            if (producto != null)
+            {
+                PrecioV = producto.PrecioV;
+                request.Detalles.Add(new VentaDetalleRequest
+                    {
+                        ProductoId = producto.ID,
+                        Descripcion = producto.NombreP,
+                        PrecioV = producto.PrecioV,
+                        Cantidad = Cantidad
+                    });
+            }
+        }
+    }
+
+    void AgregarAlDetalle()
+    {
+        if (IdProducto != 0 && Cantidad != 0)
+        {
+            var producto = Productos.FirstOrDefault(p => p.ID == IdProducto);
+            if (producto != null)
+            {
+                var detalle = new VentaDetalleRequest
+                    {
+                        ProductoId = producto.ID,
+                        Descripcion = producto.NombreP,
+                        PrecioV = producto.PrecioV,
+                        Cantidad = Cantidad
+                    };
+
+                request.Detalles.Add(detalle);
+
+                IdProducto = 0;
+                Cantidad = 1;
+            }
+        }
+    }
+
+    void Cancelar()
+    {
+        NavigationManager.NavigateTo("/facturaciones");
+    }
+
+    void EliminarDetalle(int productoId)
+    {
+        var detalle = request.Detalles.FirstOrDefault(d => d.ProductoId == productoId);
+        if (detalle != null)
+        {
+            request.Detalles.Remove(detalle);
+        }
+    }
+
+    async Task Send()
+    {
+        var result = await VentaServices.Crear(request);
+        if (result.Success)
+        {
+            Message = " La Factura fue creada exitosamente.";
+            request = new VentaRequest();
+        }
+        else
+        {
+            Message = result.Message;
+        }
+    }
+}
+

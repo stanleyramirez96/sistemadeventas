@@ -1,13 +1,15 @@
-namespace sistemadeventas.Data.Request;
+using sistemadeventas.Data.Request;
 
-
-public class ProductoRequest
+namespace sistemadeventas.Data.Request
 {
-    public int ID { get; set; }
-    public string? NombreP { get; set; }
-    public decimal Costo { get; set; }
-    public decimal Total { get; set; }
-    public int Cantidad { get; set; }
+    public class ProductoRequest
+    {
+        public int ID { get; set; }
+        public string? NombreP { get; set; }
+        public decimal PrecioV { get; set; }
+        public decimal PrecioC { get; set; }
+        public int Cantidad { get; set; }
 
-
+ 
+    }
 }

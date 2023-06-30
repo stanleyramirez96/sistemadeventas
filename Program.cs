@@ -12,6 +12,13 @@ builder.Services.AddDbContext<SistemaDeVentasDbContext>();
 builder.Services.AddScoped<ISistemaDeVentasDbContext,SistemaDeVentasDbContext>();
 builder.Services.AddScoped<IUsuarioServices, UsuarioServices>();
 
+builder.Services.AddScoped<IClienteServices, ClienteServices>();
+
+builder.Services.AddScoped<IProductoServices, ProductoServices>();
+
+builder.Services.AddScoped<sistemadeventas.IVentaServices, VentaServices>();
+
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

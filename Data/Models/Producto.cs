@@ -8,14 +8,14 @@ public class Producto
     [Key]
     public int ID { get; set; }
     public string? NombreP { get; set; }
-    public decimal Costo { get; set; }
-    public decimal Total { get; set; }
+    public decimal PrecioV { get; set; }
+    public decimal PrecioC { get; set; }
     public int Cantidad { get; set; }
     public static Producto Crear(ProductoRequest producto) => new Producto()
     {
-       NombreP = producto.NombreP,
-      Costo = producto.Costo, 
-        Total = producto.Total,
+        NombreP = producto.NombreP,
+        PrecioV = producto.PrecioV, 
+        PrecioC = producto.PrecioC,
         Cantidad = producto.Cantidad
     };
     public bool Modificar(ProductoRequest producto)
@@ -30,15 +30,15 @@ public class Producto
             cambio = true;
 
         }
-        if (Costo != producto.Costo)
+        if (PrecioV != producto.PrecioV)
         {
-            Costo = producto.Costo;
+            PrecioV = producto.PrecioV;
             cambio = true;
         }
 
-        if (Total != producto.Total)
+        if (PrecioC != producto.PrecioC)
         {
-            Total = producto.Total;
+            PrecioC = producto.PrecioC;
             cambio = true;
         }
         if (Cantidad != producto.Cantidad)
@@ -52,10 +52,10 @@ public class Producto
     {
         ID=ID,
         NombreP = NombreP,
-        Costo = Costo,
-        Total = Total,
+        PrecioV = PrecioV,
+        PrecioC = PrecioC,
         Cantidad = Cantidad
 
     };
-
+    public virtual ICollection<Venta> Ventas { get; set; }
 }

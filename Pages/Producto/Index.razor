@@ -1,0 +1,189 @@
+﻿@page "/productos"
+@inject IJSRuntime JSRuntime
+@using sistemadeventas.Data.Models
+@using sistemadeventas.Data.Request
+@using sistemadeventas.Data.Response
+@using sistemadeventas.Data.Services
+
+<h3>Productos (@productos.Count)</h3>
+
+@if (!ShowForm)
+{
+    <div class="mb-2">
+        <button class="btn btn-success" @onclick="MostrarFormulario">
+            <span class="oi oi-plus" aria-hidden="true"></span> Agregar
+        </button>
+    </div>
+}
+
+<div class="container">
+    @if (ShowForm)
+    {
+        <EditForm Model="request" OnValidSubmit="EnviarProducto">
+            <div class="mb-3 input-group">
+                <label class="input-group-text">Nombre</label>
+                <InputText class="form-control" @bind-Value="@request.NombreP"></InputText>
+            </div>
+            <div class="mb-3 input-group">
+                <label class="input-group-text">Precio Venta</label>
+                <InputNumber class="form-control" @bind-Value="@request.PrecioV"></InputNumber>
+            </div>
+            <div class="mb-3 input-group">
+                <label class="input-group-text">Precio Compra</label>
+                <InputNumber class="form-control" @bind-Value="@request.PrecioC"></InputNumber>
+            </div>
+            <div class="mb-3 input-group">
+                <label class="input-group-text">Cantidad</label>
+                <InputNumber class="form-control" @bind-Value="@request.Cantidad"></InputNumber>
+            </div>
+
+            <div class="btn-group">
+                <button type="submit" class="btn btn-outline-success">
+                    <span class="oi oi-check" aria-hidden="true"></span> @GetFormButtonLabel()
+                </button>
+
+                <button type="button" class="btn btn-outline-danger" @onclick="Cancelar">
+                    <span class="oi oi-x" aria-hidden="true"></span> Cancelar
+                </button>
+            </div>
+        </EditForm>
+        <br />
+    }
+
+    @if (!ShowForm)
+    {
+        <table class="table table-striped">
+            <thead class="thead-dark">
+                <tr>
+                    <th scope="col">Nombre</th>
+                    <th scope="col">Precio Venta</th>
+                    <th scope="col">Precio Compra</th>
+                    <th scope="col">Cantidad</th>
+                    <th scope="col">Funciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var producto in productos)
+                {
+                    <tr>
+                        <td>@producto.NombreP</td>
+                        <td>@producto.PrecioV</td>
+                        <td>@producto.PrecioC</td>
+                        <td>@producto.Cantidad</td>
+                        <td>
+                            <div class="btn-group">
+                                <button class="btn btn-outline-primary btn-sm" @onclick="() => EditarProducto(producto.ID)">
+                                    <span class="oi oi-pencil" aria-hidden="true"></span> Editar
+                                </button>
+                                <button class="btn btn-outline-danger btn-sm" @onclick="() => EliminarProducto(producto.ID)">
+                                    <span class="oi oi-trash" aria-hidden="true"></span> Eliminar
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+</div>
+
+@code {
+    private List<ProductoResponse> productos;
+    private ProductoRequest request;
+    private bool ShowForm;
+
+    [Inject]
+    private IProductoServices ProductoServices { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await ActualizarProductos();
+        request = new ProductoRequest();
+    }
+
+    private async Task EnviarProducto()
+    {
+        if (request.ID == 0)
+        {
+            var result = await ProductoServices.Crear(request);
+            if (result.Success)
+            {
+                await ActualizarProductos();
+                ShowForm = false;
+            }
+            else
+            {
+                // Maneja el error al crear el producto
+            }
+        }
+        else
+        {
+            var result = await ProductoServices.Modificar(request.ID, request);
+            if (result.Success)
+            {
+                await ActualizarProductos();
+                ShowForm = false;
+            }
+            else
+            {
+                // Maneja el error al modificar el producto
+            }
+        }
+    }
+
+    private async Task ActualizarProductos()
+    {
+        var result = await ProductoServices.Consultar();
+        if (result.Success)
+        {
+            productos = result.Data;
+        }
+    }
+
+    private void MostrarFormulario()
+    {
+        request = new ProductoRequest();
+        ShowForm = true;
+    }
+
+    private void Cancelar()
+    {
+        ShowForm = false;
+    }
+
+    private async Task EditarProducto(int productoId)
+    {
+        var result = await ProductoServices.ConsultarPorId(productoId);
+        if (result.Success)
+        {
+            var productoResponse = result.Data;
+            request = new ProductoRequest
+                {
+                    ID = productoResponse.ID,
+                    NombreP = productoResponse.NombreP,
+                    PrecioV = productoResponse.PrecioV,
+                    PrecioC = productoResponse.PrecioC,
+                    Cantidad = productoResponse.Cantidad
+                };
+            ShowForm = true;
+        }
+    }
+
+    private async Task EliminarProducto(int productoId)
+    {
+        var result = await ProductoServices.Eliminar(productoId);
+        if (result.Success)
+        {
+            await ActualizarProductos();
+        }
+        else
+        {
+            // Maneja el error al eliminar el producto
+        }
+    }
+
+    private string GetFormButtonLabel()
+    {
+        return request.ID == 0 ? "Crear" : "Actualizar";
+    }
+}

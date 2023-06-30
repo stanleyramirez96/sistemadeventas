@@ -64,6 +64,7 @@ public class Cliente
     }
     public ClienteResponse ToResponse() => new ClienteResponse()
     {
+        ID = ID,
         NombreC = NombreC,
         Apellido = Apellido,
         Telefono = Telefono,
