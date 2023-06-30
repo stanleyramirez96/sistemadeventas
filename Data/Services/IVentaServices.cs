@@ -1,7 +1,6 @@
 ﻿using sistemadeventas.Data.Request;
 using sistemadeventas.Data.Response;
 using sistemadeventas.Data.Services;
-namespace sistemadeventas;
 
 public interface IVentaServices
 {

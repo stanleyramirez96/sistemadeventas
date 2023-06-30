@@ -16,7 +16,7 @@ builder.Services.AddScoped<IClienteServices, ClienteServices>();
 
 builder.Services.AddScoped<IProductoServices, ProductoServices>();
 
-builder.Services.AddScoped<sistemadeventas.IVentaServices, VentaServices>();
+builder.Services.AddScoped<IVentaServices, VentaServices>();
 
 
 var app = builder.Build();

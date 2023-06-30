@@ -7,6 +7,23 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Content Remove="Pages\Cliente.razor" />
+    <Content Remove="Pages\Producto.razor" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="Pages\Clientes\Index.razor" />
+    <None Include="Pages\Clientes\_Imports.razor" />
+    <None Include="Pages\Logeo\Index.razor" />
+    <None Include="Pages\Logeo\_Imports.razor" />
+    <None Include="Pages\Producto\Index.razor" />
+    <None Include="Pages\Producto\_Imports.razor" />
+    <None Include="Pages\Ventas\AddEditFactura.razor" />
+    <None Include="Pages\Ventas\Index.razor" />
+    <None Include="Pages\Ventas\_Imports.razor" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="7.0.5" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="7.0.5" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="7.0.5">
